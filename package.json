@@ -8,6 +8,7 @@
     "build": "NODE_OPTIONS='--require ./node-compat.cjs' next build",
     "start": "NODE_OPTIONS='--require ./node-compat.cjs' next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest",
     "setup": "npm install && npx prisma generate && npx prisma migrate dev",
     "db:reset": "npx prisma migrate reset --force"
