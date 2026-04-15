@@ -2,9 +2,8 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review, reopened]
     paths-ignore:
-      - "**.md"
       - "package-lock.json"
       - "src/generated/**"
 
@@ -21,30 +20,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Project setup
-        run: |
-          npm run setup
-          npm run dev:daemon
+          fetch-depth: 1
 
       - name: Claude PR review
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          use_sticky_comment: true
-          direct_prompt: |
-            Please review this pull request as a precise, constructive reviewer.
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request as a precise, constructive reviewer.
             Focus on:
-            - Code correctness and potential bugs
-            - Adherence to the patterns described in CLAUDE.md (virtual file system,
-              JSX transformer, `@/` aliases, Tailwind, App.jsx entry point)
-            - Performance issues
-            - Security concerns
+            - Correctness and likely bugs
+            - Adherence to the patterns in CLAUDE.md (virtual file system, JSX
+              transformer, `@/` aliases, Tailwind, /App.jsx entry point)
+            - Performance
+            - Security
             - Test coverage for new logic
             - Readability and maintainability
-            Provide specific, actionable feedback. If the change looks good, say so.
-            The project is already set up with all dependencies installed, and the dev
-            server is running at http://localhost:3000 (logs in logs.txt). You can query
-            the SQLite database with the sqlite3 CLI if needed.
-          allowed_tools: "Bash(npm:*),Bash(sqlite3:*)"
+            Provide specific, actionable inline comments where you can, and a
+            short summary comment. If the change looks good, say so.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(npm:*),Bash(sqlite3:*)"

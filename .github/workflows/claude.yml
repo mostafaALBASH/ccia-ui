@@ -11,7 +11,7 @@ on:
     types: [submitted]
 
 jobs:
-  claude-code-action:
+  claude:
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -28,29 +28,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Project setup
-        run: |
-          npm run setup
-          npm run dev:daemon
+          fetch-depth: 1
 
       - name: Run Claude Code
-        uses: anthropics/claude-code-action@beta
+        id: claude
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          custom_instructions: |
-            The project is already set up with all dependencies installed.
-            The dev server is running at http://localhost:3000 and logs are being written to logs.txt.
-            If needed, query the SQLite database with the sqlite3 CLI.
-            If needed, use the playwright MCP tools to drive a browser against the running app.
-          mcp_config: |
-            {
-              "mcpServers": {
-                "playwright": {
-                  "command": "npx",
-                  "args": ["mcp_playwright", "--allowed-origins", "localhost:3000;cdn.tailwindcss.com;esm.sh"]
-                }
-              }
-            }
-          allowed_tools: "Bash(npm:*),Bash(sqlite3:*),mcp__playwright"
+          claude_args: |
+            --system-prompt "When asked to run or inspect the project, install dependencies with 'npm install --legacy-peer-deps' (zod v3/v4 peer conflict), then 'npx prisma generate' and 'npx prisma migrate dev'. Start the app with 'npm run dev:daemon' (logs to logs.txt). Query SQLite with the sqlite3 CLI when needed."
+            --allowedTools "Bash(npm:*),Bash(npx prisma:*),Bash(sqlite3:*)"
