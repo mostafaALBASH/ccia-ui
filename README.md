@@ -58,7 +58,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Tech Stack
 
-- Next.js 15 with App Router
+- Next.js 16 with App Router
 - React 19
 - TypeScript
 - Tailwind CSS v4
