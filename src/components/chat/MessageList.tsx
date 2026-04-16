@@ -5,6 +5,38 @@ import { cn } from "@/lib/utils";
 import { User, Bot, Loader2 } from "lucide-react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 
+function getToolLabel(toolName: string, args: Record<string, unknown>, state: string): string {
+  const path = typeof args?.path === "string" ? args.path : "";
+  const name = path.split("/").filter(Boolean).pop() ?? path;
+
+  if (toolName === "str_replace_editor") {
+    const command = args?.command;
+    if (state !== "result") {
+      if (command === "create") return `Creating ${name}…`;
+      if (command === "str_replace" || command === "insert") return `Editing ${name}…`;
+      if (command === "view") return `Reading ${name}…`;
+      return `Working on ${name}…`;
+    }
+    if (command === "create") return `Created ${name}`;
+    if (command === "str_replace" || command === "insert") return `Edited ${name}`;
+    if (command === "view") return `Read ${name}`;
+    return `Done: ${name}`;
+  }
+
+  if (toolName === "file_manager") {
+    const command = args?.command;
+    const dest = typeof args?.destination === "string" ? args.destination.split("/").filter(Boolean).pop() : "";
+    if (state !== "result") {
+      if (command === "rename") return `Renaming ${name}…`;
+      if (command === "delete") return `Deleting ${name}…`;
+    }
+    if (command === "rename") return `Renamed ${name} → ${dest}`;
+    if (command === "delete") return `Deleted ${name}`;
+  }
+
+  return toolName;
+}
+
 interface MessageListProps {
   messages: Message[];
   isLoading?: boolean;
@@ -83,12 +115,12 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
                                 {tool.state === "result" && tool.result ? (
                                   <>
                                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolLabel(tool.toolName, tool.args as Record<string, unknown>, tool.state)}</span>
                                   </>
                                 ) : (
                                   <>
                                     <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolLabel(tool.toolName, tool.args as Record<string, unknown>, tool.state)}</span>
                                   </>
                                 )}
                               </div>
