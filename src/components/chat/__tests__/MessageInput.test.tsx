@@ -159,6 +159,20 @@ test("disables submit button when input contains only whitespace", () => {
   expect(submitButton).toHaveProperty("disabled", true);
 });
 
+test("displays keyboard shortcut hint", () => {
+  const mockProps = {
+    input: "",
+    handleInputChange: vi.fn(),
+    handleSubmit: vi.fn(),
+    isLoading: false,
+  };
+
+  render(<MessageInput {...mockProps} />);
+
+  expect(screen.getByText(/to send,/)).toBeDefined();
+  expect(screen.getByText(/for new line/)).toBeDefined();
+});
+
 test("enables submit button when input has content and not loading", () => {
   const mockProps = {
     input: "Valid content",
