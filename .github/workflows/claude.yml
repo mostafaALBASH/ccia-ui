@@ -36,5 +36,5 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
-            --system-prompt "When asked to run or inspect the project, install dependencies with 'npm install --legacy-peer-deps' (zod v3/v4 peer conflict), then 'npx prisma generate' and 'npx prisma migrate dev'. Start the app with 'npm run dev:daemon' (logs to logs.txt). Query SQLite with the sqlite3 CLI when needed."
+            --system-prompt "When asked to run or inspect the project, run 'npm run setup' (installs deps cleanly, generates Prisma client, runs migrations), then start the app with 'npm run dev:daemon' (logs to logs.txt). Query SQLite with the sqlite3 CLI when needed. Run 'npm run typecheck' and 'npm test' before claiming changes are complete."
             --allowedTools "Bash(npm:*),Bash(npx prisma:*),Bash(sqlite3:*)"
