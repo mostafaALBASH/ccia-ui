@@ -22,6 +22,15 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Project Setup
+        run: |
+          npm run setup
+
       - name: Claude PR review
         uses: anthropics/claude-code-action@v1
         with:
@@ -43,4 +52,4 @@ jobs:
             Provide specific, actionable inline comments where you can, and a
             short summary comment. If the change looks good, say so.
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(npm:*),Bash(sqlite3:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(npm:*),Bash(npx prisma:*),Bash(sqlite3:*)"

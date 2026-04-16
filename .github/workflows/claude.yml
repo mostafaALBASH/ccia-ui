@@ -30,11 +30,22 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Project Setup
+        run: |
+          npm run setup
+          npm run dev:daemon
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
-            --system-prompt "When asked to run or inspect the project, install dependencies with 'npm install --legacy-peer-deps' (zod v3/v4 peer conflict), then 'npx prisma generate' and 'npx prisma migrate dev'. Start the app with 'npm run dev:daemon' (logs to logs.txt). Query SQLite with the sqlite3 CLI when needed."
-            --allowedTools "Bash(npm:*),Bash(npx prisma:*),Bash(sqlite3:*)"
+            --system-prompt "The project is already set up with all dependencies installed. The server is already running at localhost:3000. Logs from it are being written to logs.txt. If needed, you can query the db with the 'sqlite3' cli. If needed, use the mcp__playwright set of tools to launch a browser and interact with the app. Run 'npm run typecheck' and 'npm test' before claiming changes are complete."
+            --mcp-config '{"mcpServers":{"playwright":{"command":"npx","args":["@playwright/mcp@latest","--allowed-origins","localhost:3000;cdn.tailwindcss.com;esm.sh"]}}}'
+            --allowedTools "Bash(npm:*),Bash(npx prisma:*),Bash(sqlite3:*),mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_fill_form,mcp__playwright__browser_press_key,mcp__playwright__browser_wait_for,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_close"

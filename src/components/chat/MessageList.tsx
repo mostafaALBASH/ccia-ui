@@ -5,12 +5,58 @@ import { cn } from "@/lib/utils";
 import { User, Bot, Loader2 } from "lucide-react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 
+function getToolLabel(toolName: string, args: Record<string, unknown>, state: string): string {
+  const path = typeof args?.path === "string" ? args.path : "";
+  const name = path.split("/").filter(Boolean).pop() ?? path;
+
+  if (toolName === "str_replace_editor") {
+    const command = args?.command;
+    if (state !== "result") {
+      if (command === "create") return `Creating ${name}…`;
+      if (command === "str_replace" || command === "insert") return `Editing ${name}…`;
+      if (command === "view") return `Reading ${name}…`;
+      return `Working on ${name}…`;
+    }
+    if (command === "create") return `Created ${name}`;
+    if (command === "str_replace" || command === "insert") return `Edited ${name}`;
+    if (command === "view") return `Read ${name}`;
+    return `Done: ${name}`;
+  }
+
+  if (toolName === "file_manager") {
+    const command = args?.command;
+    const dest = typeof args?.destination === "string" ? args.destination.split("/").filter(Boolean).pop() : "";
+    if (state !== "result") {
+      if (command === "rename") return `Renaming ${name}…`;
+      if (command === "delete") return `Deleting ${name}…`;
+    }
+    if (command === "rename") return `Renamed ${name} → ${dest}`;
+    if (command === "delete") return `Deleted ${name}`;
+  }
+
+  return toolName;
+}
+
 interface MessageListProps {
   messages: Message[];
   isLoading?: boolean;
 }
 
 export function MessageList({ messages, isLoading }: MessageListProps) {
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto px-4 py-6">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 mb-4 shadow-sm">
+            <Bot className="h-7 w-7 text-blue-600" />
+          </div>
+          <p className="text-neutral-900 font-semibold text-lg mb-2">Start a conversation to generate React components</p>
+          <p className="text-neutral-500 text-sm max-w-sm">I can help you create buttons, forms, cards, and more</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full overflow-y-auto px-4 py-6">
       <div className="space-y-6 max-w-4xl mx-auto w-full">
@@ -69,12 +115,12 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
                                 {tool.state === "result" && tool.result ? (
                                   <>
                                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolLabel(tool.toolName, tool.args as Record<string, unknown>, tool.state)}</span>
                                   </>
                                 ) : (
                                   <>
                                     <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolLabel(tool.toolName, tool.args as Record<string, unknown>, tool.state)}</span>
                                   </>
                                 )}
                               </div>
